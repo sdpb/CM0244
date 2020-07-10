@@ -1,4 +1,4 @@
-# CM0244-2
+# CM0244
 
 ## Licencia
 [MIT](https://choosealicense.com/licenses/mit/)
