@@ -4,19 +4,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Primero importamos nuestra base de datos de saber 11
-dataSet = pd.read_csv('saber11.csv', sep=';')
+dataSet = pd.read_csv('saber.csv')
 # dataSet = dataSet.fillna(0) # Rellena espacios vacios con 0
 
-
 # Se definen algunas listas que serán útiles luego
-comunas = pd.unique(dataSet.comuna).tolist()
 materias = ['puntaje_lectura', 'puntaje_matematicas',
             'puntaje_sociales', 'puntaje_naturales', 'puntaje_ingles']
 
-# pd.unique(dataSet.año_semestre).tolist()
-años = [20142, 20152, 20162, 20172, 20182]
-# ['privado', 'oficial', 'contratacion']
-tipoPrestacionServicio = pd.unique(dataSet.prestacion_servicio).tolist()
+comunas = pd.unique(dataSet.comuna).tolist()
+años = pd.unique(dataSet.año_semestre).tolist()
+tipoPrestacionServicio = pd.unique(dataSet.prestacion_servicio).tolist()  # ['privado', 'oficial', 'contratacion']
 
 
 # Filtra el dataset dado un año
@@ -34,9 +31,21 @@ def porcentaje(total_poblacion, total_muestras):
     return (total_muestras / total_poblacion) * 100
 
 
+# Retorna una lista que contiene la frecuencia relativa de cada tipo de casos favorables
+# dado el tamaño de una población, sus casos favorables y un atributo de estos
+def porcentaje_tipo(tam_poblacion, casos_favorables, atributo_casos_fav):
+    lista = sorted(pd.unique(casos_favorables[atributo_casos_fav]).tolist())
+
+    porcentajes = []
+    for _ in lista:
+        porcentajes.append(porcentaje(tam_poblacion,
+                                      len(casos_favorables.loc[casos_favorables[atributo_casos_fav] == _])))
+    return porcentajes
+
+
 # Grafica de la frecuencia relativa de datos que cumplen la condición
 # de ser mayores o iguales a la media del puntaje global por año
-def tarta_tipo_instXaño(año):
+def tarta_tipo_año(año):
     # Filtro de datos
     datosAño = filtro_año(año)
     media = np.nanmean(datosAño.puntaje_global)
@@ -53,10 +62,7 @@ def tarta_tipo_instXaño(año):
     colores = ['gold', 'lightcoral', 'lightskyblue']
 
     # Frecuencia relativa por tipo de prestación de servicio
-    porcentajes = []
-    for _ in tipoPrestacionServicio:
-        porcentajes.append(porcentaje(len(datosAño),
-                                      len(mediaFiltro.loc[mediaFiltro.prestacion_servicio == _])))
+    porcentajes = porcentaje_tipo(len(datosAño), mediaFiltro, 'prestacion_servicio')
 
     # Diagrama de torta
     plt.pie(porcentajes, labels=tipoPrestacionServicio, colors=colores,
@@ -266,7 +272,7 @@ if __name__ == "__main__":
         desvEstandarAño(_)
         print("{}: promedio {}".format(_, promedioAño(_)))
         print("Tamaño: {}".format(len(filtro_año(_))))
-        tarta_tipo_instXaño(_)
+        tarta_tipo_año(_)
         tabla_frecuencia_rangos('puntaje_global', _)
         bigotes_año_materias(_)
 
