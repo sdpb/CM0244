@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
-from scipy.stats import f_oneway, ttest_ind, t, anderson
+from scipy.stats import anderson
+from statsmodels.api import OLS
 
 # Primero importamos nuestra base de datos de saber 11
 dataSet = pd.read_csv('saber.csv')
@@ -115,57 +116,47 @@ def media_año(filtro_muestra, año, atributo_media, atributo_filtro):
     return porcentajes, etiquetas
 
 
-def independent_ttest(data1, data2):
-    df = len(data1) + len(data2) - 2
-    # calculate means
-    mean1, mean2 = np.mean(data1), np.mean(data2)
-    # calculate standard errors
-    se1, se2 = np.sem(data1), np.sem(data2)
-    # standard error on the difference between the samples
-    sed = np.sqrt(se1 ** 2.0 + se2 ** 2.0)
-    # calculate the t statistic
-    t_stat = (mean1 - mean2) / sed
-    p = (1.0 - t.cdf(abs(t_stat), df)) * 2.0
-
-    return t_stat, p
-
-
-def modelo_lineal():
+def ecuaRecta():
     x = dataSet.puntaje_matematicas.values.reshape((-1, 1))
-    x2 = dataSet.puntaje_matematicas.values
     y = dataSet.puntaje_global
     modelo = LinearRegression().fit(x, y)
     r_sq = modelo.score(x, y)
-    r2 = modelo.score(x.reshape(-1, 1), y)
     y_pred = modelo.predict(x)
-    ttest, af = ttest_ind(y, x)
-    stat, p = ttest_ind(x, y)
-    """
+
     print('coefficient of determination:', r_sq)
     print('b_0:', modelo.intercept_)
     print('b_1:', modelo.coef_)
     print('Error cuadrático medio: %.2f' % mean_squared_error(y, y_pred))
-    print('Coeficiente de Determinación R2 = {}'.format(r2))
-    print(f_oneway(x2, y))
-    print(ttest, af)
-    print('t=%.3f, p=%.3f' % (stat, p))
-    """
+    plots(x, y, y_pred)
 
-    from statsmodels.api import OLS
-    OLS(dataSet.puntaje_matematicas, dataSet.puntaje_global).fit().summary()
 
+def auxplots(x, y, title):
     plt.scatter(x, y, s=np.pi * 3, alpha=0.5)
-    plt.title("MODELO DE REGRESIÓN LINEAL")
+    plt.title(title)
     plt.xlabel("PUNTAJE MATEMÁTICAS")
     plt.ylabel("PUNTAJE GLOBAL")
+
+
+def plots(x, y, y_pred):
+    auxplots(x, y, "Gráfico de dispersión")
+    plt.show()
+
+    auxplots(x, y, "Modelo de regresión")
     plt.plot(x, y_pred, color='red')
     plt.show()
 
 
+def nuevo_regress():
+    modelo = OLS(dataSet.puntaje_global, dataSet.puntaje_matematicas).fit()
+    summary = modelo.summary()
+    print(summary)
+    residual_vals = modelo.resid
+    print(anderson(residual_vals))
+
+
 if __name__ == '__main__':
-    from statsmodels.api import OLS
-    print(OLS(dataSet.puntaje_global, dataSet.puntaje_matematicas).fit().summary())
-    # modelo_lineal()
+    nuevo_regress()
+    ecuaRecta()
     # puntaje_global_año = obtener_muestra(dataSet.año_semestre, 20182, 0.25)  # .puntaje_global
     # resumen(puntaje_global_año.puntaje_global)
     # naturales = obtener_muestra(dataSet.año_semestre, 20182, 0.3)  # .puntaje_naturales
