@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
-from scipy.stats import anderson
-from statsmodels.api import OLS
+from scipy.stats import anderson, t
+from statsmodels.api import OLS, qqplot
 
 # Primero importamos nuestra base de datos de saber 11
 dataSet = pd.read_csv('saber.csv')
@@ -151,12 +151,14 @@ def nuevo_regress():
     summary = modelo.summary()
     print(summary)
     residual_vals = modelo.resid
+    qqplot(residual_vals, t, fit=True, line='45')
     print(anderson(residual_vals))
+    plt.show()
 
 
 if __name__ == '__main__':
     nuevo_regress()
-    ecuaRecta()
+    # ecuaRecta()
     # puntaje_global_año = obtener_muestra(dataSet.año_semestre, 20182, 0.25)  # .puntaje_global
     # resumen(puntaje_global_año.puntaje_global)
     # naturales = obtener_muestra(dataSet.año_semestre, 20182, 0.3)  # .puntaje_naturales
