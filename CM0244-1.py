@@ -20,7 +20,7 @@ tipoPrestacionServicio = pd.unique(dataSet.prestacion_servicio).tolist()
 
 
 # Filtra el dataset dado un año
-def filtro_añoSmestre(año):
+def filtro_año(año):
     return dataSet[dataSet.año_semestre == año]
 
 
@@ -38,7 +38,7 @@ def porcentaje(total_poblacion, total_muestras):
 # de ser mayores o iguales a la media del puntaje global por año
 def tarta_tipo_instXaño(año):
     # Filtro de datos
-    datosAño = filtro_añoSmestre(año)
+    datosAño = filtro_año(año)
     media = np.nanmean(datosAño.puntaje_global)
     mediaFiltro = datosAño[datosAño.puntaje_global >= media]
 
@@ -70,7 +70,7 @@ def tarta_tipo_instXaño(año):
 # Desviacion estandar del puntaje global dado el año
 # para los prestadores de servicio y en general
 def desvEstandarAño(año):
-    datosAño = filtro_añoSmestre(año)
+    datosAño = filtro_año(año)
 
     privada = datosAño[datosAño.prestacion_servicio == 'privado']
     oficial = datosAño[datosAño.prestacion_servicio == 'oficial']
@@ -89,7 +89,7 @@ def desvEstandarAño(año):
 
 # Promedio del puntaje global dado el año
 def promedioAño(año):
-    datosAño = filtro_añoSmestre(año)
+    datosAño = filtro_año(año)
     # DEBUG
     """
     promed = np.nanmean(datosAño.puntaje_global)
@@ -101,7 +101,7 @@ def promedioAño(año):
 
 # Frecuencia absoluta dado un año
 def frecuenciasAño(año):
-    datosAño = filtro_añoSmestre(año)
+    datosAño = filtro_año(año)
     return len(datosAño)
 
 
@@ -149,7 +149,7 @@ def tabla_comuna_materia(materia):
         media = np.nanmean(dataset_ordenado_punt[materia]).round(3)
         cellText.append([media, mediana])
     graficar_tabla(cellText, ["Media", "Mediana"], [
-                   str(_).strip().upper() for _ in comunas], materia.upper())
+        str(_).strip().upper() for _ in comunas], materia.upper())
 
 
 # Grafica una tabla de frecuencia dada una columna
@@ -168,7 +168,7 @@ def tabla_frecuencia(columna, titulo):
 def tabla_frecuencia_rangos(columna, año):
     fig, ax = plt.subplots()
     rangos = range(100, 500 + 1, 100)
-    datos = filtro_añoSmestre(año)
+    datos = filtro_año(año)
     datos = pd.cut(datos[columna], bins=rangos)
     frecuenciaDatos = datos.value_counts()
     frecuenciaDatos.plot(
@@ -212,7 +212,7 @@ def tablacruzada(diccionarioDatos, titulo):
 # Encuentra la suma de los estudiantes matriculados, inscritos y presentes
 # de las pruebas ICFES dado un año
 def presentesICFES_aux(año):
-    datosAño = filtro_añoSmestre(año)
+    datosAño = filtro_año(año)
     matriculados = datosAño.matriculados.sum()
     inscritos = datosAño.registros.sum()
     presentes = datosAño.presentes.sum()
@@ -230,7 +230,7 @@ def presentesICFES():
 
 # Diagrama de bigotes para las materias del dataset dado un año
 def bigotes_año_materias(año):
-    datosAño = filtro_añoSmestre(año)
+    datosAño = filtro_año(año)
 
     fig, ax = plt.subplots()
     boxes = []
@@ -263,18 +263,16 @@ def general_describe():
 
 if __name__ == "__main__":
     for _ in años:
-        tarta_tipo_instXaño(_)
         desvEstandarAño(_)
+        print("{}: promedio {}".format(_, promedioAño(_)))
+        print("Tamaño: {}".format(len(filtro_año(_))))
+        tarta_tipo_instXaño(_)
+        tabla_frecuencia_rangos('puntaje_global', _)
+        bigotes_año_materias(_)
 
     barras_año(frecuenciasAño, 'Frecuencia años')
     barras_año(promedioAño, 'Promedio años')
-
     tablacruzada(presentesICFES(),
                  "Matriculados-Inscritos-Presentes ICFES anual")
-
     for _ in materias:
         tabla_comuna_materia(_)
-    bigotes_año_materias(20182)
-
-    for _ in años:
-        tabla_frecuencia_rangos('puntaje_global', _)
