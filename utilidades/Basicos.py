@@ -1,4 +1,4 @@
-import pandas as np
+import numpy as np
 
 
 # Filtra el dataset dado un atributo de datos y un parámetro condicional igual o diferente
