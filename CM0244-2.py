@@ -20,9 +20,9 @@ u0 = 280
 long = 81
 
 # Se definen algunas listas que serán útiles luego
-periodos = pd.unique(dataSet.año_semestre).tolist()
+periodos = pd.unique(dataSet.año_semestre).tolist()  # [20142, 20152, 20162, 20172, 20182]
+prestacion_servicio = pd.unique(dataSet.prestacion_servicio).tolist()  # ['privado', 'oficial', 'contratacion']
 comunas = pd.unique(dataSet.comuna).tolist()
-tipoPrestacionServicio = pd.unique(dataSet.prestacion_servicio).tolist()  # ['privado', 'oficial', 'contratacion']
 materias = ['puntaje_lectura', 'puntaje_matematicas',
             'puntaje_sociales', 'puntaje_naturales', 'puntaje_ingles']
 
@@ -76,9 +76,9 @@ def media_periodo(filtro_muestra, periodo, atributo_media, atributo_filtro):
     tarta(datos, etiquetas, '{} {}'.format(titulo.upper(), periodo))
 
 
-def ecuaRecta():
-    x = dataSet.puntaje_matematicas.values.reshape((-1, 1))
-    y = dataSet.puntaje_global
+def ecuaRecta(dataSet_ind, var_ind, dataSet_dep, var_dep):
+    x = dataSet_ind[var_ind].values.reshape((-1, 1))
+    y = dataSet_dep[var_dep].values
     modelo = LinearRegression().fit(x, y)
     y_pred = modelo.predict(x)
 
@@ -91,23 +91,9 @@ def ecuaRecta():
     print('Beta_0: {}'.format(beta_0))
     print('Beta_1: {}'.format(beta_1))
     print('Error cuadrático medio: {}'.format(error_cuadratico))
-    plots(x, y, y_pred)
 
-
-def auxplots(x, y, title):
-    plt.scatter(x, y, s=np.pi * 3, alpha=0.5)
-    plt.title(title)
-    plt.xlabel("PUNTAJE MATEMÁTICAS")
-    plt.ylabel("PUNTAJE GLOBAL")
-
-
-def plots(x, y, y_pred):
-    auxplots(x, y, "Gráfico de dispersión")
-    plt.show()
-
-    auxplots(x, y, "Modelo de regresión")
-    plt.plot(x, y_pred, color='red')
-    plt.show()
+    plot_regresion(x, y, var_ind, var_dep)
+    plot_regresion(x, y, var_ind, var_dep, y_pred)
 
 
 def nuevo_regress():
@@ -123,7 +109,7 @@ def nuevo_regress():
 
 if __name__ == '__main__':
     # nuevo_regress()
-    # ecuaRecta()
+    # ecuaRecta(dataSet, 'puntaje_matematicas', dataSet, 'puntaje_global')
     # puntaje_global_año = obtener_muestra(dataSet.año_semestre, 20182, 0.25)  # .puntaje_global
     # resumen(puntaje_global_año.puntaje_global)
     # naturales = obtener_muestra(dataSet.año_semestre, 20182, 0.3)  # .puntaje_naturales
