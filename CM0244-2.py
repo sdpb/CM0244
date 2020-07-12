@@ -8,7 +8,6 @@ from statsmodels.api import OLS, qqplot
 
 # Primero importamos nuestra base de datos de saber 11
 dataSet = pd.read_csv('saber.csv')
-# dataSet = dataSet.fillna(0) # Rellena espacios vacios con 0
 
 x_barra = 262.0864
 ese = 23.8949
@@ -16,23 +15,41 @@ u0 = 280
 long = 81
 
 # Se definen algunas listas que serán útiles luego
-pd.unique(dataSet.año_semestre).tolist()
+periodos = pd.unique(dataSet.año_semestre).tolist()
 comunas = pd.unique(dataSet.comuna).tolist()
 tipoPrestacionServicio = pd.unique(dataSet.prestacion_servicio).tolist()  # ['privado', 'oficial', 'contratacion']
 materias = ['puntaje_lectura', 'puntaje_matematicas',
             'puntaje_sociales', 'puntaje_naturales', 'puntaje_ingles']
 
 
-# Filtra el dataset dado un atributo de datos y un parámetro condicional
-def filtro(atributo_muestra, atributo_param):
-    return dataSet[atributo_muestra == atributo_param]
+# Filtra el dataset dado un atributo de datos y un parámetro condicional igual o diferente
+def filtro_igual(dataS, atributo_muestra, atributo_param, bool_diferente):
+    if bool_diferente:
+        return dataS[atributo_muestra != atributo_param]
+    else:
+        return dataS[atributo_muestra == atributo_param]
+
+
+# Filtra el dataset dado un atributo de datos y un parámetro condicional mayor o igual
+def filtro_mayor(dataS, atributo_muestra, atributo_param, bool_mayor_igual):
+    if bool_mayor_igual:
+        return dataS[dataS[atributo_muestra] >= atributo_param]
+    else:
+        return dataS[dataS[atributo_muestra] > atributo_param]
+
+
+# Filtra el dataset dado un atributo de datos y un parámetro condicional menor o igual
+def filtro_menor(dataS, atributo_muestra, atributo_param, bool_menor_igual):
+    if bool_menor_igual:
+        return dataS[dataS[atributo_muestra] <= atributo_param]
+    else:
+        return dataS[dataS[atributo_muestra] < atributo_param]
 
 
 # Retorna una muestra dado una función de filtro, su parámetro respectivo
 # y un porcentaje como tamaño de la muestra
-
-def obtener_muestra(filtro_muestra, filtro_param, tam_muestra):
-    muestra = filtro(filtro_muestra, filtro_param)
+def obtener_muestra(dataS, filtro_muestra, filtro_param, tam_muestra):
+    muestra = filtro_igual(dataS, filtro_muestra, filtro_param, False)
     muestra = muestra.sample(frac=tam_muestra)
     return muestra
 
@@ -50,13 +67,12 @@ def porcentaje(total_poblacion, total_muestras):
 # Retorna una lista que contiene la frecuencia relativa de cada tipo de casos favorables
 # dado el tamaño de una población, sus casos favorables y un atributo de estos
 def porcentaje_tipo(tam_poblacion, casos_favorables, atributo_casos_fav):
-    lista = sorted(pd.unique(casos_favorables[atributo_casos_fav]).tolist())
+    etiquetas = sorted(pd.unique(casos_favorables[atributo_casos_fav]).tolist())
 
-    porcentajes = []
-    for _ in lista:
-        porcentajes.append(porcentaje(tam_poblacion,
-                                      len(casos_favorables.loc[casos_favorables[atributo_casos_fav] == _])))
-    return porcentajes, lista
+    datos = []
+    for _ in etiquetas:
+        datos.append(porcentaje(tam_poblacion, len(casos_favorables.loc[casos_favorables[atributo_casos_fav] == _])))
+    return datos, etiquetas, atributo_casos_fav
 
 
 # Retorna la desviación estándar de un atributo de una muestra (posiblemente la población)
@@ -95,38 +111,30 @@ def formula2():
     return z.round(3)
 
 
-def media_año(filtro_muestra, año, atributo_media, atributo_filtro):
+def media_periodo(filtro_muestra, periodo, atributo_media, atributo_filtro):
     # Filtro de datos
-    datosAño = filtro(filtro_muestra, año)
-    media = obtener_media(datosAño[atributo_media])
-    mediaFiltro = datosAño[datosAño[atributo_media] >= media]
-
-    # DEBUG
-    """
-    print("prueba contratación", len(datosMedia.loc[datosMedia.prestacion_servicio == 'contratacion']))
-    print("prueba oficial", len(datosMedia.loc[datosMedia.prestacion_servicio == 'oficial']))
-    print("prueba privado", len(datosMedia.loc[datosMedia.prestacion_servicio == 'privado']))
-    print("prueba año", len(dfrom sklearn.linear_model import LinearRegressionatosPorYear))
-    
-    "Colegios por encima de la media del puntaje global del año {}".format(año)
-    """
-
-    # Frecuencia relativa por tipo de prestación de servicio
-    porcentajes, etiquetas = porcentaje_tipo(len(datosAño), mediaFiltro, atributo_filtro)
-    return porcentajes, etiquetas
+    filtroDatos = filtro_igual(dataSet, filtro_muestra, periodo, False)
+    media = obtener_media(filtroDatos[atributo_media])
+    mediaFiltro = filtro_mayor(filtroDatos, atributo_media, media, True)
+    datos, etiquetas, titulo = porcentaje_tipo(len(filtroDatos), mediaFiltro, atributo_filtro)
+    tarta(datos, etiquetas, '{} {}'.format(titulo.upper(), periodo))
 
 
 def ecuaRecta():
     x = dataSet.puntaje_matematicas.values.reshape((-1, 1))
     y = dataSet.puntaje_global
     modelo = LinearRegression().fit(x, y)
-    r_sq = modelo.score(x, y)
     y_pred = modelo.predict(x)
 
-    print('coefficient of determination:', r_sq)
-    print('b_0:', modelo.intercept_)
-    print('b_1:', modelo.coef_)
-    print('Error cuadrático medio: %.2f' % mean_squared_error(y, y_pred))
+    r_2 = modelo.score(x, y).round(3)
+    beta_0 = modelo.intercept_.round(3)
+    beta_1 = modelo.coef_[0].round(3)
+    error_cuadratico = mean_squared_error(y, y_pred).round(3)
+
+    print('Coeficiente de determinación R²: {}'.format(r_2))
+    print('Beta_0: {}'.format(beta_0))
+    print('Beta_1: {}'.format(beta_1))
+    print('Error cuadrático medio: {}'.format(error_cuadratico))
     plots(x, y, y_pred)
 
 
@@ -153,11 +161,12 @@ def nuevo_regress():
     residual_vals = modelo.resid
     qqplot(residual_vals, t, fit=True, line='45')
     print(anderson(residual_vals))
+    plt.title("Q-Q plot")
     plt.show()
 
 
 if __name__ == '__main__':
-    nuevo_regress()
+    # nuevo_regress()
     # ecuaRecta()
     # puntaje_global_año = obtener_muestra(dataSet.año_semestre, 20182, 0.25)  # .puntaje_global
     # resumen(puntaje_global_año.puntaje_global)
@@ -167,3 +176,7 @@ if __name__ == '__main__':
     # print(formula2())
     # print(obtener_media(filtro(dataSet.año_semestre, 20182).puntaje_naturales))
     # print(formula(x_barra, ese, u0, long))
+
+    # for _ in periodos:
+    #    media_periodo(dataSet.año_semestre, _, 'puntaje_global', 'prestacion_servicio')
+    pass
