@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
-from scipy.stats import anderson, t
-from statsmodels.api import OLS, qqplot
+from scipy.stats import anderson
+from statsmodels.api import OLS
 import matplotlib.pyplot as plt
 
 # Locales
@@ -99,16 +99,14 @@ def ecuaRecta(dataSet_ind, var_ind, dataSet_dep, var_dep):
 def nuevo_regress():
     modelo = OLS(dataSet.puntaje_global, dataSet.puntaje_matematicas).fit()
     summary = modelo.summary()
+    vals_residuales = modelo.resid
     print(summary)
-    residual_vals = modelo.resid
-    qqplot(residual_vals, t, fit=True, line='45')
-    print(anderson(residual_vals))
-    plt.title("Q-Q plot")
-    plt.show()
+    print(anderson(vals_residuales))
+    grafica_qq(vals_residuales)
 
 
 if __name__ == '__main__':
-    # nuevo_regress()
+    nuevo_regress()
     # ecuaRecta(dataSet, 'puntaje_matematicas', dataSet, 'puntaje_global')
     # puntaje_global_año = obtener_muestra(dataSet.año_semestre, 20182, 0.25)  # .puntaje_global
     # resumen(puntaje_global_año.puntaje_global)
