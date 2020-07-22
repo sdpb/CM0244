@@ -1,30 +1,18 @@
 # Bibliotecas
-import pandas as pd
-import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 from scipy.stats import anderson
 from statsmodels.api import OLS
-import matplotlib.pyplot as plt
 
 # Locales
 from utilidades.Basicos import *
 from utilidades.Graficas import *
-
-# Primero importamos nuestra base de datos de saber 11
-dataSet = pd.read_csv('saber.csv')
+from main import *
 
 x_barra = 262.0864
 ese = 23.8949
 u0 = 280
 long = 81
-
-# Se definen algunas listas que serán útiles luego
-periodos = pd.unique(dataSet.año_semestre).tolist()  # [20142, 20152, 20162, 20172, 20182]
-prestacion_servicio = pd.unique(dataSet.prestacion_servicio).tolist()  # ['privado', 'oficial', 'contratacion']
-comunas = pd.unique(dataSet.comuna).tolist()
-materias = ['puntaje_lectura', 'puntaje_matematicas',
-            'puntaje_sociales', 'puntaje_naturales', 'puntaje_ingles']
 
 
 # Retorna una muestra dado una función de filtro, su parámetro respectivo
@@ -33,17 +21,6 @@ def obtener_muestra(dataS, filtro_muestra, filtro_param, tam_muestra):
     muestra = filtro_igual(dataS, filtro_muestra, filtro_param, False)
     muestra = muestra.sample(frac=tam_muestra)
     return muestra
-
-
-# Retorna una lista que contiene la frecuencia relativa de cada tipo de casos favorables
-# dado el tamaño de una población, sus casos favorables y un atributo de estos
-def porcentaje_tipo(tam_poblacion, casos_favorables, atributo_casos_fav):
-    etiquetas = sorted(pd.unique(casos_favorables[atributo_casos_fav]).tolist())
-
-    datos = []
-    for _ in etiquetas:
-        datos.append(porcentaje(tam_poblacion, len(casos_favorables.loc[casos_favorables[atributo_casos_fav] == _])))
-    return datos, etiquetas, atributo_casos_fav
 
 
 # Retorna un resumen del atributo de una muestra (media, desviación estándar y tamaño de la muestra)
@@ -67,15 +44,6 @@ def formula2():
     return z.round(3)
 
 
-def media_periodo(filtro_muestra, periodo, atributo_media, atributo_filtro):
-    # Filtro de datos
-    filtroDatos = filtro_igual(dataSet, filtro_muestra, periodo, False)
-    media = obtener_media(filtroDatos[atributo_media])
-    mediaFiltro = filtro_mayor(filtroDatos, atributo_media, media, True)
-    datos, etiquetas, titulo = porcentaje_tipo(len(filtroDatos), mediaFiltro, atributo_filtro)
-    tarta(datos, etiquetas, '{} {}'.format(titulo.upper(), periodo))
-
-
 def ecuaRecta(dataSet_ind, var_ind, dataSet_dep, var_dep):
     x = dataSet_ind[var_ind].values.reshape((-1, 1))
     y = dataSet_dep[var_dep].values
@@ -97,7 +65,7 @@ def ecuaRecta(dataSet_ind, var_ind, dataSet_dep, var_dep):
 
 
 def nuevo_regress():
-    modelo = OLS(dataSet.puntaje_global, dataSet.puntaje_matematicas).fit()
+    modelo = OLS(DATASET.puntaje_global, DATASET.puntaje_matematicas).fit()
     summary = modelo.summary()
     vals_residuales = modelo.resid
     print(summary)
@@ -106,7 +74,7 @@ def nuevo_regress():
 
 
 if __name__ == '__main__':
-    nuevo_regress()
+    # nuevo_regress()
     # ecuaRecta(dataSet, 'puntaje_matematicas', dataSet, 'puntaje_global')
     # puntaje_global_año = obtener_muestra(dataSet.año_semestre, 20182, 0.25)  # .puntaje_global
     # resumen(puntaje_global_año.puntaje_global)
@@ -117,6 +85,4 @@ if __name__ == '__main__':
     # print(obtener_media(filtro(dataSet.año_semestre, 20182).puntaje_naturales))
     # print(formula(x_barra, ese, u0, long))
 
-    # for _ in periodos:
-    #    media_periodo(dataSet.año_semestre, _, 'puntaje_global', 'prestacion_servicio')
     pass
