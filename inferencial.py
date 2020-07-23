@@ -7,7 +7,6 @@ from statsmodels.api import OLS
 # Locales
 from utilidades.Basicos import *
 from utilidades.Graficas import *
-from main import *
 
 
 # Retorna una muestra dado una función de filtro, su parámetro respectivo
@@ -73,7 +72,6 @@ def modelo_regresion():
 
 
 def estadistica_inferencial():
-
     muestra_periodo_25 = obtener_muestra(DATASET, 'año_semestre', 20182, 0.25)  # Puntaje_global
     media_1, desviacion_estandar_1, longitud_muestra_1 = resumen(muestra_periodo_25, 'puntaje_global')
     print('Se rechaza H_0: {}'.format(Z_c(media_1, desviacion_estandar_1, 280, longitud_muestra_1) < -Z_alfa))
@@ -83,7 +81,8 @@ def estadistica_inferencial():
     media_naturales_20182 = obtener_media(filtro_periodo(20182)['puntaje_naturales'])
     media_2, desviacion_estandar_2, longitud_muestra_2 = resumen(muestra_periodo_30, 'puntaje_naturales')
 
-    print('Instituciones debajo de la media: {}'.format(len(muestra_periodo_30[muestra_periodo_30['puntaje_naturales'] < media_naturales_20182])))
+    print('Instituciones debajo de la media: {}'.format(
+        len(muestra_periodo_30[muestra_periodo_30['puntaje_naturales'] < media_naturales_20182])))
     print('Se rechaza H_0: {}'.format(Z_c2(media_2, 0.15, longitud_muestra_2) > Z_alfa))
     print('\n{}'.format('*' * 100))
 

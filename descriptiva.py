@@ -7,7 +7,6 @@ from statsmodels.api import OLS
 # Locales
 from utilidades.Basicos import *
 from utilidades.Graficas import *
-from main import *
 
 
 # Retorna una lista que contiene la frecuencia relativa de cada tipo de casos favorables

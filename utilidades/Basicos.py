@@ -1,9 +1,17 @@
 # Bibliotecas
 from numpy import nanmean, nanstd, nanpercentile
 from statistics import median
+from pandas import read_csv, unique
 
-# Locales
-from main import DATASET
+# Primero importamos nuestra base de datos de saber 11
+DATASET = read_csv('archivos/saber.csv')
+
+# Se definen algunas listas que serán útiles luego
+PERIODOS = unique(DATASET.año_semestre).tolist()  # [20142, 20152, 20162, 20172, 20182]
+PRESTACION_SERVICIO = unique(DATASET.prestacion_servicio).tolist()  # ['privado', 'oficial', 'contratacion']
+COMUNAS = unique(DATASET.comuna).tolist()
+MATERIAS = ['puntaje_lectura', 'puntaje_matematicas', 'puntaje_sociales', 'puntaje_naturales', 'puntaje_ingles']
+Z_alfa = 1.645
 
 
 # Filtra el dataset dado un atributo de datos y un parámetro condicional igual o diferente
