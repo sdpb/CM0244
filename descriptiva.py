@@ -1,5 +1,6 @@
 # Bibliotecas
-import pandas as pd
+from pandas import cut, DataFrame
+from pandas import unique as pd_unique
 from scipy.stats import anderson
 from statsmodels.api import OLS
 
@@ -12,7 +13,7 @@ from main import *
 # Retorna una lista que contiene la frecuencia relativa de cada tipo de casos favorables
 # dado el tamaño de una población, sus casos favorables y un atributo de estos
 def porcentaje_tipo(tam_poblacion, casos_favorables, atributo_casos_fav):
-    etiquetas = sorted(pd.unique(casos_favorables[atributo_casos_fav]).tolist())
+    etiquetas = sorted(pd_unique(casos_favorables[atributo_casos_fav]).tolist())
 
     datos = []
     for _ in etiquetas:
@@ -80,7 +81,7 @@ def tabla_comuna_materia(materia):
 def tabla_frecuencia_rangos(atributo_muestra, periodo):
     rangos = range(100, 500 + 1, 100)
     datos = filtro_periodo(periodo)
-    datos = pd.cut(datos[atributo_muestra], bins=rangos)
+    datos = cut(datos[atributo_muestra], bins=rangos)
     frecuenciaDatos = datos.value_counts()
     titulo = '{} {}'.format(atributo_muestra.upper(), periodo)
     etiquetas = list(map(str, frecuenciaDatos))  # Etiquetas eje y
@@ -105,7 +106,7 @@ def presentesICFES_aux(periodo):
 def presentesICFES():
     titulo = 'Matriculados-Inscritos-Presentes ICFES anual'
     diccionarioDatos = {str(_): presentesICFES_aux(_) for _ in PERIODOS}
-    df = pd.DataFrame.from_dict(diccionarioDatos).transpose()
+    df = DataFrame.from_dict(diccionarioDatos).transpose()
     grafica_tablaCruzada(df, titulo)
 
 
